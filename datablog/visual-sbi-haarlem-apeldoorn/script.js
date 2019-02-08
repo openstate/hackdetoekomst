@@ -1,5 +1,7 @@
-var w = 500,
-	h = 500;
+var base = document.body.offsetWidth - Math.max(document.body.offsetWidth * 0.2, 180);
+
+var w = base,
+	h = base;
 
 var colorscale = d3.scale.category10();
 
@@ -52,7 +54,7 @@ var mycfg = {
   h: h,
   maxValue: 0.2,
   levels: 6,
-  ExtraWidthX: 300
+  ExtraWidthX: (document.body.offsetWidth - base)
 }
 
 //Call function to draw the Radar chart
@@ -66,7 +68,7 @@ RadarChart.draw("#chart", d, mycfg);
 var svg = d3.select('#body')
 	.selectAll('svg')
 	.append('svg')
-	.attr("width", w+300)
+	.attr("width", w + mycfg.ExtraWidthX)
 	.attr("height", h)
 
 //Create the title for the legend
