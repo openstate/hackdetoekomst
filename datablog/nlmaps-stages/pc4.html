@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+ 	<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+		<title>NL maps 1</title>
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.4.0/dist/leaflet.css" integrity="sha256-YR4HrDE479EpYZgeTkQfgVJq08+277UXxMLbi/YP69o=" crossorigin="anonymous">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-gesture-handling@1.1.8/dist/leaflet-gesture-handling.min.css" integrity="sha256-LhJiGL8zdnwmqQgxK45GXouxZnYhMrDdor4wyLxKxSg=" crossorigin="anonymous">
+		<script src="https://cdn.jsdelivr.net/npm/leaflet@1.4.0/dist/leaflet.js" integrity="sha256-6BZRSENq3kxI4YYBDqJ23xg0r1GwTHEpvp3okdaIqBw=" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@geo-frontend/nlmaps@2.3.57/dist/nlmaps.iife.js" integrity="sha256-VKArW4A7fVEt2bQDrYg5n0Jd4Y61EucfK299EZk2wPw=" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/chroma-js@2.0.3/chroma.min.js" integrity="sha256-CnfzubvVAsthq0pwKJW1NedqCx5NoWbxyyF3of+CzYY=" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/leaflet-gesture-handling@1.1.8/dist/leaflet-gesture-handling.min.js" integrity="sha256-47jI9sFtLK5ME+uJB6Sn+zluzXAQQmnetxnKkLPHQSY=" crossorigin="anonymous"></script>
+		<script src="pc4.geo.json.js"></script>
+		<style>
+			html, body, #nlmaps-holder {
+				height: 100%;
+			}
+			body {
+				overflow: hidden;
+				margin: 0;
+			}
+			.info {
+				padding: 6px 8px;
+				font: 14px/16px Arial, Helvetica, sans-serif;
+				background: white;
+				background: rgba(255,255,255,0.8);
+				box-shadow: 0 0 15px rgba(0,0,0,0.2);
+				border-radius: 5px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="nlmaps-holder"></div>
+		<script>
+			// Based on https://nlmaps.nl/ (Leaflet variant)
+			var map = nlmaps.createMap({
+				style: 'grijs',
+				target: 'nlmaps-holder',
+			});
+			// map.zoomControl.setPosition('bottomleft');
+			// Normally we would use leaflet options, but nlmaps opts are not forwarded to the leaflet init L.map(., options)
+			map.options.zoomDelta = 0.5;
+			map.options.zoomSnap = 0.25;
+			map.options.gestureHandling = true;
+			map.options.gestureHandlingOptions = {
+				text: {
+					touch: 'gebruik 2 vingers om te kaart te bewegen',
+					scroll: 'gebruik ctrl + scroll om in te zoomen',
+					scrollMac: 'gebruik \u2318 + scroll om in te zoomen',
+				},
+			};
+			// Fit NL in view
+			map.fitBounds([[53.63, 7.19],[50.73, 3.51]]);
+
+			// Coloring with chroma.js
+			var coloring = chroma.scale('Blues');
+			// This is the maximum value of STAGES in our set
+			var maxValue = 2123;
+			function color(p) {
+				if (p.STAGES == null)
+					return '#CCC';
+				// Use a square root to give lower values more color
+				return coloring(Math.sqrt(p.STAGES / maxValue)).hex();
+			}
+
+			// The GeoJSON data variable is defined in pc4.geo.json.js
+			var geojson = L.geoJSON(data, {
+				style: function (feature) {
+					return {
+						weight: 1,
+						color: '#FFF',
+						dashArray: '3',
+						fillColor: color(feature.properties),
+						fillOpacity: 0.7,
+					}
+				},
+				onEachFeature: function (feature, layer) {
+					var p = feature.properties;
+			        layer.bindPopup("In postcode <b>" + p.PC4 + "</b> waren <b>" + p.STAGES + "</b> stages op " + p.INWONER + " inwoners");
+				},
+			}).addTo(map);
+			map.attributionControl.addAttribution('© Centraal Bureau voor de Statistiek, © ESRI Nederland'); // PC4
+			map.attributionControl.addAttribution('© SBB'); // Data
+		</script>
+	</body>
+</html>
